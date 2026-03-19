@@ -6,11 +6,12 @@
 <button onclick="postComment()">Post</button>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzjVUAWPVeCrW2-rhVwmEYV8yjxJ_wK6FZuNA_ngX_xK_BMGSlkp9qrnIvEOlDSyvYQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxLX9Tzxnlgt0aU6b6HVFzCKrkqYLMu1zGR7aLt3JY1OGpDlbVCSCwRsRufNUNFoTN3/exec"; // ovde stavi URL iz Google Apps Script
 
 const params = new URLSearchParams(window.location.search);
 const PAGE_ID = params.get("page") || "default";
-  
+
+// Učitava komentare
 async function loadComments() {
   const res = await fetch(API_URL);
   const data = await res.json();
@@ -19,23 +20,27 @@ async function loadComments() {
   container.innerHTML = "";
 
   data.forEach(row => {
-    if (row[0] === PAGE_ID) {
+    if (row.page === PAGE_ID) {
       container.innerHTML += `
         <div style="margin-bottom:10px;">
-          <b>${row[1]}</b><br>
-          ${row[2]}
+          <b>${row.name}</b> (${new Date(row.date).toLocaleString()})<br>
+          ${row.comment}
         </div>
       `;
     }
   });
 }
 
+// Dodaje komentar
 async function postComment() {
-  const name = document.getElementById("name").value;
-  const comment = document.getElementById("comment").value;
+  const name = document.getElementById("name").value.trim();
+  const comment = document.getElementById("comment").value.trim();
+
+  if(!name || !comment) return alert("Popuni oba polja!");
 
   await fetch(API_URL, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       page: PAGE_ID,
       name: name,
@@ -43,8 +48,12 @@ async function postComment() {
     })
   });
 
+  document.getElementById("name").value = "";
+  document.getElementById("comment").value = "";
+
   loadComments();
 }
 
+// Pokreni učitavanje odmah
 loadComments();
 </script>
