@@ -1,0 +1,48 @@
+<div id="comments"></div>
+
+<h3>Leave a comment</h3>
+<input id="name" placeholder="Your name"><br><br>
+<textarea id="comment" placeholder="Your comment"></textarea><br><br>
+<button onclick="postComment()">Post</button>
+
+<script>
+const API_URL = "AKfycbym7f2_ViwRlPO6b1mtvJpY2dS3owZndAT2cZ2q7lg8rQc0KMCWL32_Gxf9iA1TNtkW";
+const PAGE_ID = document.referrer || "default";
+
+async function loadComments() {
+  const res = await fetch(API_URL);
+  const data = await res.json();
+
+  const container = document.getElementById("comments");
+  container.innerHTML = "";
+
+  data.forEach(row => {
+    if (row[0] === PAGE_ID) {
+      container.innerHTML += `
+        <div style="margin-bottom:10px;">
+          <b>${row[1]}</b><br>
+          ${row[2]}
+        </div>
+      `;
+    }
+  });
+}
+
+async function postComment() {
+  const name = document.getElementById("name").value;
+  const comment = document.getElementById("comment").value;
+
+  await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      page: PAGE_ID,
+      name: name,
+      comment: comment
+    })
+  });
+
+  loadComments();
+}
+
+loadComments();
+</script>
